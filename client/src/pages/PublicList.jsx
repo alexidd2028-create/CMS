@@ -17,20 +17,24 @@ export default function PublicList() {
   }, [contentType]);
 
   const titleField = type?.fields.find((f) => f.name === 'title')?.name || type?.fields[0]?.name;
+  const imageField = type?.fields.find((f) => f.type === 'media')?.name;
 
   return (
     <div>
       <h1>{type?.label || contentType}</h1>
       {error && <div className="error">{error}</div>}
-      <ul>
+      <div className="grid">
         {entries.map((entry) => (
-          <li key={entry.id}>
-            <Link to={`/site/${contentType}/${entry.id}`}>
+          <Link to={`/site/${contentType}/${entry.id}`} key={entry.id} className="card-link">
+            {imageField && entry.data[imageField] && (
+              <img src={entry.data[imageField]} alt="" className="card-image" />
+            )}
+            <div className="card-title">
               {titleField ? String(entry.data[titleField]) : `Entry #${entry.id}`}
-            </Link>
-          </li>
+            </div>
+          </Link>
         ))}
-      </ul>
+      </div>
       {entries.length === 0 && !error && <p>No published entries yet.</p>}
     </div>
   );

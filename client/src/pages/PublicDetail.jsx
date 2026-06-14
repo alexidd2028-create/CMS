@@ -24,7 +24,9 @@ export default function PublicDetail() {
       {type.fields.map((f) => (
         <div key={f.name} className="field-display">
           <h3>{f.name}</h3>
-          {f.type === 'richtext' ? (
+          {f.type === 'media' ? (
+            entry.data[f.name] && <img src={entry.data[f.name]} alt="" className="detail-image" />
+          ) : f.type === 'richtext' ? (
             <p style={{ whiteSpace: 'pre-wrap' }}>{entry.data[f.name]}</p>
           ) : f.type === 'boolean' ? (
             <p>{entry.data[f.name] ? 'Yes' : 'No'}</p>

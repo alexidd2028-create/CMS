@@ -11,6 +11,7 @@ export default function EntryForm() {
   const [data, setData] = useState({});
   const [status, setStatus] = useState('draft');
   const [error, setError] = useState('');
+  const [uploading, setUploading] = useState(null);
 
   useEffect(() => {
     api.getContentTypes().then((types) => {
@@ -33,6 +34,20 @@ export default function EntryForm() {
 
   function updateField(name, value) {
     setData((d) => ({ ...d, [name]: value }));
+  }
+
+  async function handleFileChange(fieldName, file) {
+    if (!file) return;
+    setUploading(fieldName);
+    setError('');
+    try {
+      const { url } = await api.uploadMedia(file);
+      updateField(fieldName, url);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setUploading(null);
+    }
   }
 
   async function handleSubmit(e) {
@@ -71,6 +86,24 @@ export default function EntryForm() {
                 value={data[f.name] ?? ''}
                 onChange={(e) => updateField(f.name, e.target.value)}
               />
+            ) : f.type === 'media' ? (
+              <div className="media-field">
+                {data[f.name] && (
+                  <img src={data[f.name]} alt="" className="media-preview" />
+                )}
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => handleFileChange(f.name, e.target.files[0])}
+                />
+                {uploading === f.name && <span>Uploading...</span>}
+                <input
+                  type="text"
+                  placeholder="or paste image URL"
+                  value={data[f.name] ?? ''}
+                  onChange={(e) => updateField(f.name, e.target.value)}
+                />
+              </div>
             ) : (
               <input
                 type={f.type === 'number' ? 'number' : f.type === 'date' ? 'date' : 'text'}

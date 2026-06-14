@@ -42,6 +42,20 @@ export const api = {
       body: JSON.stringify({ data, status }),
     }),
   deleteEntry: (contentType, id) => request(`/entries/${contentType}/${id}`, { method: 'DELETE' }),
+
+  uploadMedia: async (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const token = getToken();
+    const res = await fetch(`${API_BASE}/media/upload`, {
+      method: 'POST',
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: formData,
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || res.statusText);
+    return body;
+  },
 };
 
 export { getToken };
