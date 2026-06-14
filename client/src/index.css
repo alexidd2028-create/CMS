@@ -18,7 +18,10 @@ body {
 }
 .header a { color: white; text-decoration: none; }
 .brand { font-weight: 700; font-size: 1.2rem; }
+.header-left { display: flex; gap: 16px; align-items: center; }
 .header-right { display: flex; gap: 12px; align-items: center; }
+.field-display { margin-bottom: 16px; }
+.field-display h3 { margin: 0 0 4px; font-size: 0.85rem; text-transform: uppercase; color: #888; }
 
 .content { flex: 1; padding: 24px; max-width: 960px; margin: 0 auto; width: 100%; }
 

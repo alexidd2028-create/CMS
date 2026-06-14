@@ -4,6 +4,9 @@ import Login from './pages/Login';
 import ContentTypes from './pages/ContentTypes';
 import Entries from './pages/Entries';
 import EntryForm from './pages/EntryForm';
+import PublicHome from './pages/PublicHome';
+import PublicList from './pages/PublicList';
+import PublicDetail from './pages/PublicDetail';
 
 function PrivateRoute({ children }) {
   const { user } = useAuth();
@@ -15,9 +18,12 @@ function Layout({ children }) {
   return (
     <div className="layout">
       <header className="header">
-        <Link to="/" className="brand">
-          CMS
-        </Link>
+        <div className="header-left">
+          <Link to="/site" className="brand">
+            Site
+          </Link>
+          <Link to="/">Admin</Link>
+        </div>
         {user && (
           <div className="header-right">
             <span>
@@ -37,6 +43,10 @@ export default function App() {
     <AuthProvider>
       <Layout>
         <Routes>
+          <Route path="/site" element={<PublicHome />} />
+          <Route path="/site/:contentType" element={<PublicList />} />
+          <Route path="/site/:contentType/:id" element={<PublicDetail />} />
+
           <Route path="/login" element={<Login />} />
           <Route
             path="/"

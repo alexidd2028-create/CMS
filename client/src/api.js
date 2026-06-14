@@ -28,6 +28,10 @@ export const api = {
     request(`/content-types/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
   deleteContentType: (id) => request(`/content-types/${id}`, { method: 'DELETE' }),
 
+  getPublicContentTypes: () => request('/public/content-types'),
+  getPublicEntries: (contentType) => request(`/public/entries/${contentType}`),
+  getPublicEntry: (contentType, id) => request(`/public/entries/${contentType}/${id}`),
+
   getEntries: (contentType) => request(`/entries/${contentType}`),
   getEntry: (contentType, id) => request(`/entries/${contentType}/${id}`),
   createEntry: (contentType, data, status) =>
