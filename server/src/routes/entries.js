@@ -4,41 +4,41 @@ import { requireAuth } from '../auth.js';
 
 const router = express.Router();
 
-function serialize(row) {
-  return { ...row, data: JSON.parse(row.data) };
-}
-
-function getContentType(idOrName) {
-  return (
-    db.prepare('SELECT * FROM content_types WHERE id = ?').get(idOrName) ||
-    db.prepare('SELECT * FROM content_types WHERE name = ?').get(idOrName)
-  );
+async function getContentType(idOrName) {
+  const byId = /^\d+$/.test(idOrName)
+    ? await db.query('SELECT * FROM content_types WHERE id = $1', [idOrName])
+    : { rows: [] };
+  if (byId.rows[0]) return byId.rows[0];
+  const byName = await db.query('SELECT * FROM content_types WHERE name = $1', [idOrName]);
+  return byName.rows[0];
 }
 
 // List entries for a content type (by id or name)
-router.get('/:contentType', requireAuth, (req, res) => {
-  const ct = getContentType(req.params.contentType);
+router.get('/:contentType', requireAuth, async (req, res) => {
+  const ct = await getContentType(req.params.contentType);
   if (!ct) return res.status(404).json({ error: 'Content type not found' });
 
-  const rows = db
-    .prepare('SELECT * FROM entries WHERE content_type_id = ? ORDER BY id DESC')
-    .all(ct.id);
-  res.json(rows.map(serialize));
+  const result = await db.query(
+    'SELECT * FROM entries WHERE content_type_id = $1 ORDER BY id DESC',
+    [ct.id]
+  );
+  res.json(result.rows);
 });
 
-router.get('/:contentType/:id', requireAuth, (req, res) => {
-  const ct = getContentType(req.params.contentType);
+router.get('/:contentType/:id', requireAuth, async (req, res) => {
+  const ct = await getContentType(req.params.contentType);
   if (!ct) return res.status(404).json({ error: 'Content type not found' });
 
-  const row = db
-    .prepare('SELECT * FROM entries WHERE id = ? AND content_type_id = ?')
-    .get(req.params.id, ct.id);
-  if (!row) return res.status(404).json({ error: 'Not found' });
-  res.json(serialize(row));
+  const result = await db.query('SELECT * FROM entries WHERE id = $1 AND content_type_id = $2', [
+    req.params.id,
+    ct.id,
+  ]);
+  if (!result.rows[0]) return res.status(404).json({ error: 'Not found' });
+  res.json(result.rows[0]);
 });
 
-router.post('/:contentType', requireAuth, (req, res) => {
-  const ct = getContentType(req.params.contentType);
+router.post('/:contentType', requireAuth, async (req, res) => {
+  const ct = await getContentType(req.params.contentType);
   if (!ct) return res.status(404).json({ error: 'Content type not found' });
 
   const { data, status } = req.body;
@@ -46,44 +46,44 @@ router.post('/:contentType', requireAuth, (req, res) => {
     return res.status(400).json({ error: 'data must be an object' });
   }
 
-  const result = db
-    .prepare('INSERT INTO entries (content_type_id, data, status) VALUES (?, ?, ?)')
-    .run(ct.id, JSON.stringify(data), status || 'draft');
-
-  const row = db.prepare('SELECT * FROM entries WHERE id = ?').get(result.lastInsertRowid);
-  res.status(201).json(serialize(row));
+  const result = await db.query(
+    'INSERT INTO entries (content_type_id, data, status) VALUES ($1, $2, $3) RETURNING *',
+    [ct.id, JSON.stringify(data), status || 'draft']
+  );
+  res.status(201).json(result.rows[0]);
 });
 
-router.put('/:contentType/:id', requireAuth, (req, res) => {
-  const ct = getContentType(req.params.contentType);
+router.put('/:contentType/:id', requireAuth, async (req, res) => {
+  const ct = await getContentType(req.params.contentType);
   if (!ct) return res.status(404).json({ error: 'Content type not found' });
 
-  const existing = db
-    .prepare('SELECT * FROM entries WHERE id = ? AND content_type_id = ?')
-    .get(req.params.id, ct.id);
-  if (!existing) return res.status(404).json({ error: 'Not found' });
+  const existing = await db.query('SELECT * FROM entries WHERE id = $1 AND content_type_id = $2', [
+    req.params.id,
+    ct.id,
+  ]);
+  if (!existing.rows[0]) return res.status(404).json({ error: 'Not found' });
 
   const { data, status } = req.body;
-  db.prepare(
-    "UPDATE entries SET data = ?, status = ?, updated_at = datetime('now') WHERE id = ?"
-  ).run(
-    data ? JSON.stringify(data) : existing.data,
-    status ?? existing.status,
-    req.params.id
+  const result = await db.query(
+    "UPDATE entries SET data = $1, status = $2, updated_at = now() WHERE id = $3 RETURNING *",
+    [
+      data ? JSON.stringify(data) : JSON.stringify(existing.rows[0].data),
+      status ?? existing.rows[0].status,
+      req.params.id,
+    ]
   );
-
-  const row = db.prepare('SELECT * FROM entries WHERE id = ?').get(req.params.id);
-  res.json(serialize(row));
+  res.json(result.rows[0]);
 });
 
-router.delete('/:contentType/:id', requireAuth, (req, res) => {
-  const ct = getContentType(req.params.contentType);
+router.delete('/:contentType/:id', requireAuth, async (req, res) => {
+  const ct = await getContentType(req.params.contentType);
   if (!ct) return res.status(404).json({ error: 'Content type not found' });
 
-  const result = db
-    .prepare('DELETE FROM entries WHERE id = ? AND content_type_id = ?')
-    .run(req.params.id, ct.id);
-  if (result.changes === 0) return res.status(404).json({ error: 'Not found' });
+  const result = await db.query('DELETE FROM entries WHERE id = $1 AND content_type_id = $2', [
+    req.params.id,
+    ct.id,
+  ]);
+  if (result.rowCount === 0) return res.status(404).json({ error: 'Not found' });
   res.json({ ok: true });
 });
 

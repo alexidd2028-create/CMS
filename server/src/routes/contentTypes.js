@@ -15,18 +15,18 @@ function validateFields(fields) {
   return null;
 }
 
-router.get('/', requireAuth, (req, res) => {
-  const rows = db.prepare('SELECT * FROM content_types ORDER BY id').all();
-  res.json(rows.map((r) => ({ ...r, fields: JSON.parse(r.fields) })));
+router.get('/', requireAuth, async (req, res) => {
+  const result = await db.query('SELECT * FROM content_types ORDER BY id');
+  res.json(result.rows);
 });
 
-router.get('/:id', requireAuth, (req, res) => {
-  const row = db.prepare('SELECT * FROM content_types WHERE id = ?').get(req.params.id);
-  if (!row) return res.status(404).json({ error: 'Not found' });
-  res.json({ ...row, fields: JSON.parse(row.fields) });
+router.get('/:id', requireAuth, async (req, res) => {
+  const result = await db.query('SELECT * FROM content_types WHERE id = $1', [req.params.id]);
+  if (!result.rows[0]) return res.status(404).json({ error: 'Not found' });
+  res.json(result.rows[0]);
 });
 
-router.post('/', requireAuth, requireAdmin, (req, res) => {
+router.post('/', requireAuth, requireAdmin, async (req, res) => {
   const { name, label, fields } = req.body;
   if (!name || !label) return res.status(400).json({ error: 'name and label required' });
   if (!/^[a-z][a-z0-9_]*$/.test(name)) {
@@ -36,37 +36,38 @@ router.post('/', requireAuth, requireAdmin, (req, res) => {
   if (err) return res.status(400).json({ error: err });
 
   try {
-    const result = db
-      .prepare('INSERT INTO content_types (name, label, fields) VALUES (?, ?, ?)')
-      .run(name, label, JSON.stringify(fields));
-    res.status(201).json({ id: result.lastInsertRowid, name, label, fields });
+    const result = await db.query(
+      'INSERT INTO content_types (name, label, fields) VALUES ($1, $2, $3) RETURNING id',
+      [name, label, JSON.stringify(fields)]
+    );
+    res.status(201).json({ id: result.rows[0].id, name, label, fields });
   } catch (e) {
-    if (e.message.includes('UNIQUE')) return res.status(409).json({ error: 'name already exists' });
+    if (e.code === '23505') return res.status(409).json({ error: 'name already exists' });
     throw e;
   }
 });
 
-router.put('/:id', requireAuth, requireAdmin, (req, res) => {
+router.put('/:id', requireAuth, requireAdmin, async (req, res) => {
   const { label, fields } = req.body;
-  const existing = db.prepare('SELECT * FROM content_types WHERE id = ?').get(req.params.id);
-  if (!existing) return res.status(404).json({ error: 'Not found' });
+  const existing = await db.query('SELECT * FROM content_types WHERE id = $1', [req.params.id]);
+  if (!existing.rows[0]) return res.status(404).json({ error: 'Not found' });
 
   if (fields) {
     const err = validateFields(fields);
     if (err) return res.status(400).json({ error: err });
   }
 
-  db.prepare('UPDATE content_types SET label = ?, fields = ? WHERE id = ?').run(
-    label ?? existing.label,
-    fields ? JSON.stringify(fields) : existing.fields,
-    req.params.id
-  );
+  await db.query('UPDATE content_types SET label = $1, fields = $2 WHERE id = $3', [
+    label ?? existing.rows[0].label,
+    fields ? JSON.stringify(fields) : JSON.stringify(existing.rows[0].fields),
+    req.params.id,
+  ]);
   res.json({ ok: true });
 });
 
-router.delete('/:id', requireAuth, requireAdmin, (req, res) => {
-  const result = db.prepare('DELETE FROM content_types WHERE id = ?').run(req.params.id);
-  if (result.changes === 0) return res.status(404).json({ error: 'Not found' });
+router.delete('/:id', requireAuth, requireAdmin, async (req, res) => {
+  const result = await db.query('DELETE FROM content_types WHERE id = $1', [req.params.id]);
+  if (result.rowCount === 0) return res.status(404).json({ error: 'Not found' });
   res.json({ ok: true });
 });
 

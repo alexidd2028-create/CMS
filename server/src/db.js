@@ -1,37 +1,37 @@
-import Database from 'better-sqlite3';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import pg from 'pg';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const db = new Database(path.join(__dirname, '..', 'data.sqlite'));
+const { Pool } = pg;
 
-db.pragma('journal_mode = WAL');
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.DATABASE_URL?.includes('localhost') ? false : { rejectUnauthorized: false },
+});
 
-db.exec(`
+await pool.query(`
 CREATE TABLE IF NOT EXISTS users (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  id SERIAL PRIMARY KEY,
   email TEXT UNIQUE NOT NULL,
   password TEXT NOT NULL,
   role TEXT NOT NULL DEFAULT 'editor',
-  created_at TEXT DEFAULT (datetime('now'))
+  created_at TIMESTAMPTZ DEFAULT now()
 );
 
 CREATE TABLE IF NOT EXISTS content_types (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  id SERIAL PRIMARY KEY,
   name TEXT UNIQUE NOT NULL,
   label TEXT NOT NULL,
-  fields TEXT NOT NULL,
-  created_at TEXT DEFAULT (datetime('now'))
+  fields JSONB NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT now()
 );
 
 CREATE TABLE IF NOT EXISTS entries (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  id SERIAL PRIMARY KEY,
   content_type_id INTEGER NOT NULL REFERENCES content_types(id) ON DELETE CASCADE,
-  data TEXT NOT NULL,
+  data JSONB NOT NULL,
   status TEXT NOT NULL DEFAULT 'draft',
-  created_at TEXT DEFAULT (datetime('now')),
-  updated_at TEXT DEFAULT (datetime('now'))
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
 );
 `);
 
-export default db;
+export default pool;
