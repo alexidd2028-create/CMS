@@ -16,7 +16,7 @@
 | 驗收已完成的工作 | `verifier`（自訂 agent，見 §6） | 絕不派給做這件事的同一個 agent |
 | 規劃多檔大改動 | `Plan` | 回實作計畫，主對話決定採不採用 |
 
-主對話**可以**親自做：讀單一已知路徑的檔案、單次精準 Grep、改 1～2 個檔案的小 edit、跑驗證指令、git 操作、與使用者對話。判準：**「我需要的是結論還是原文？」需要結論就派工。**
+主對話**可以**親自做：讀單一已知路徑的檔案、單次精準 Grep、小 edit（≤3 個檔案且總 diff 預估 ≤60 行；超過就派實作 subagent）、跑驗證指令、git 操作、與使用者對話。判準：**「我需要的是結論還是原文？」需要結論就派工。**
 
 ## 2. 派工三件套（每個派工 prompt 必含，缺一件就不要送出）
 
@@ -52,7 +52,7 @@
 
 ## 6. 驗證不自驗
 
-做的人不驗收自己的產出。驗收一律派 fresh-context 的 `verifier` agent（定義在 `.claude/agents/verifier.md`；若該 agent type 不可用，改派 `general-purpose` + `dispatch-templates.md` §審查模板，效果等同）：
+做的人不驗收自己的產出。**門檻**（與 CLAUDE.md 鐵律 6、judgment.md §2 一致）：改動超過 1 個檔案或超過 20 行，驗收必派 fresh-context 的 `verifier` agent；更小的改動可免派，但驗證階梯照跑。派法（定義在 `.claude/agents/verifier.md`；若該 agent type 不可用，改派 `general-purpose` + `dispatch-templates.md` §審查模板，效果等同）：
 
 - **檔案類產出**：verifier 實際 Read 檔案，逐條對照驗收條件（read-back，不是看做事者的自述）。
 - **程式碼**：verifier 跑 project.md 的驗證階梯 + 讀 diff 找邏輯錯誤。

@@ -4,12 +4,12 @@ Headless CMS：`server/`（Express + Supabase Postgres，部署 Render）+ `clie
 
 ## 鐵律（無例外）
 
-1. **開工先讀 `.claude/docs/project.md`**（約 70 行）。它是專案事實的單一來源；README 面向人類，project.md 面向你。
+1. **開工先讀 `.claude/docs/project.md`**（精簡，一次可讀完）。它是專案事實的單一來源；README 面向人類，project.md 面向你。
 2. **主對話不做大面積讀取。** 要掃 repo、讀 3 個以上檔案找東西、讀 CI log 或大 diff → 派 subagent（規則見 delegation.md）。永不整檔讀 `package-lock.json`、`node_modules/**`、`client/dist/**`。
 3. **改完就跑驗證階梯**（project.md §驗證階梯），回報時寫明做到第幾層。做不到 runtime 驗證就明說，不准寫「已測試」。
 4. **每完成一個獨立單位就 commit + push** 到本 session 的指定分支。容器是暫時的，沒推上去的等於沒做。
 5. **文件與程式碼同 commit 同步**：你的改動讓 project.md 或 README 變成謊言時，同一個 commit 內修正它們。
-6. **不自驗**：自己寫的東西，驗收派 fresh-context subagent（delegation.md §驗證不自驗）。
+6. **不自驗**：改動超過 1 個檔案或 20 行，驗收必派 fresh-context subagent；更小的改動至少跑完驗證階梯（delegation.md §驗證不自驗）。
 7. GitHub 操作一律用 `mcp__github__*` 工具（無 `gh` CLI），查詢帶 `minimal_output: true` 與分頁。
 
 ## 路由（需要時才讀，不要一次全讀）

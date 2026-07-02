@@ -20,12 +20,12 @@
 
 - [ ] 驗收條件逐條有證據（不是「應該可以」）。
 - [ ] 跑過 project.md §驗證階梯 中適用的每一層，結果 0 error。
-- [ ] `verifier` agent 回 `VERDICT: PASS`（凡是改動超過 1 個檔案或 20 行）。
-- [ ] 已 commit + push 到指定分支（`git status` 乾淨、`git log origin/<branch>` 看得到）。
+- [ ] `verifier` agent 回 `VERDICT: PASS`——改動超過 1 個檔案**或**超過 20 行時必要；更小的改動可免派 verifier，但驗證階梯照跑（此門檻與 CLAUDE.md 鐵律 6、delegation.md §6 一致）。
+- [ ] 已 commit + push 到指定分支（`git status` 乾淨、`git log origin/⟨分支名⟩` 看得到；⟨⟩ 是佔位符，替換成實際分支名再執行）。
 - [ ] 改動波及的文件（project.md、README）已同步。
 - [ ] 回報裡寫明驗證做到第幾層、哪些沒驗到。
 
-✅ 正例：「新增欄位型別 `date`：server 端 contentTypes.js 驗證 + client EntryForm 輸入 + PublicDetail 顯示。驗證：node --check 全過、client lint+build 0 error、verifier PASS（報告見下）。後端 runtime 未驗（本地無 DB）。已推 commit abc1234。」
+✅ 正例：「新增欄位型別 `select`（目前 VALID_FIELD_TYPES 沒有的）：server 端 contentTypes.js 驗證 + client EntryForm 輸入 + PublicDetail 顯示。驗證：node --check 全過、client lint+build 0 error、verifier PASS（報告見下）。後端 runtime 未驗（本地無 DB）。已推 commit abc1234。」
 ❌ 反例：「我已經修好了，程式碼看起來沒問題。」——沒有任何一項證據，這句話等於沒說。
 
 ## 3. 何時該停下來問使用者
@@ -33,7 +33,7 @@
 **先查後問**：能用工具查到的（程式碼行為、文件、git 歷史）自己查，查不到再問。但以下情況**必須問，不准自己決定**：
 
 - 不可逆或對外可見：刪除資料/檔案（超出自己本次建立的範圍）、force push、開 PR、merge、對生產設定的建議以外的實際變更、需要使用者的 secret（如 `DATABASE_URL`）。
-- 任務目標有兩種合理解讀且做錯要重來（例如「把公開站台改漂亮一點」——範圍完全開放）。
+- 任務目標有兩種合理解讀且做錯要重來。「兩種合理解讀」的判定法：兩種解讀會動到的檔案集合明顯不同，或其中一種做下去難以回退——只是措辭不精確、做法殊途同歸的不算，直接挑合理的做。（例如「把公開站台改漂亮一點」——範圍完全開放，該問。）
 - 發現使用者的前提是錯的（例如使用者說「改一下 SQLite 的 schema」但專案是 Postgres）——指出矛盾並問，不要默默照字面做。
 
 ✅ 正例：任務說「清掉沒用的欄位」但有兩個欄位疑似被 public site 間接使用——列出證據，用 AskUserQuestion 給選項。

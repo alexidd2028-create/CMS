@@ -8,7 +8,7 @@
 
 - `server/src/db.js` 只 `CREATE TABLE IF NOT EXISTS`，**沒有 migration 機制**。你改了 schema，生產資料庫不會跟著變。
 - Render/Vercel 的 env var（`DATABASE_URL`、`VITE_API_BASE`、`SUPABASE_*`）設在平台上，repo 裡看不到現值。新功能需要新 env var 時，程式碼寫完只是完成一半。
-- Vercel rewrite 全部路由到 index.html——client 端新增路由沒事，但如果有人想加「非 /api 的伺服器端路徑」，那是走不通的架構。
+- `vercel.json` 的 rewrite 把所有路徑導到 index.html——這只影響 Vercel 上的 client 靜態站（所以 client 端新增路由沒事）；server API 獨立部署在 Render，不受這條 rewrite 影響。兩個平台是分開的部署平面，不要混為一談。
 
 因此養成習慣：**任何涉及部署邊界的改動，回報最後附一段「使用者需要做的事」清單**（要設什麼 env var、要不要手動跑 SQL、去哪個平台確認）。這段清單的價值常常高於程式碼本身。
 

@@ -73,7 +73,7 @@
 
 ## 5. 審查（驗收別人/自己完成的工作）
 
-派給：`verifier`（自訂 agent，已設 sonnet + effort high）。若 verifier 不可用改派 `general-purpose` model `sonnet`，並把 `.claude/agents/verifier.md` 的規則整段貼進 prompt。
+派給：`verifier`（自訂 agent，已設 sonnet + effort high）。若 verifier 不可用改派 `general-purpose` model `sonnet`，並把 `.claude/agents/verifier.md` 的規則正文（YAML frontmatter 以下的部分，frontmatter 不要貼）貼進 prompt。
 
 ```
 驗收任務。獨立驗證以下工作，不信任做事者的自述。
