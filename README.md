@@ -4,7 +4,7 @@ A minimal headless CMS with custom content types.
 
 ## Structure
 
-- `server/` — Express + SQLite API (JWT auth, dynamic content types, entries CRUD)
+- `server/` — Express + Postgres API (JWT auth, dynamic content types, entries CRUD)
 - `client/` — React (Vite) admin panel
 
 ## Running
