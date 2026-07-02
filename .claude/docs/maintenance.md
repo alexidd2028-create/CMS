@@ -40,7 +40,27 @@
 - **精簡是改規則檔的一種**：CLAUDE.md 鐵律區與各檔的規則本體適用 §2（先問）；踩坑記錄與事實區適用 §1（自行做）。
 - 精簡後派 `verifier` 確認：路由表指向的檔案都存在、被刪的內容確實已固化或過時。
 
-## 5. 每季（或使用者要求時）的健檢清單
+## 5. 移植到新專案
+
+這套制度分兩層。開新專案時：
+
+**照搬（通用層，與專案無關）**：
+```sh
+# 在新 repo 根目錄執行（把 ⟨CMS repo⟩ 換成本 repo 的路徑或先 clone 下來）
+mkdir -p .claude/docs .claude/agents
+cp ⟨CMS repo⟩/.claude/docs/{delegation,judgment,dispatch-templates,maintenance}.md .claude/docs/
+cp ⟨CMS repo⟩/.claude/agents/verifier.md .claude/agents/
+```
+
+**不照搬（專案層，照抄就是把舊事實種進新專案）**：`project.md`、`diagnosis.md`、`letter.md`、CLAUDE.md 的踩坑記錄。CLAUDE.md 的骨架（鐵律 + 路由表）可以抄，但專案描述重寫、踩坑記錄清空。
+
+**新專案第一個 session 的開工 prompt（可直接貼）**：
+
+> 這個 repo 已複製了一套通用制度檔（.claude/docs/ 下的 delegation、judgment、dispatch-templates、maintenance 與 .claude/agents/verifier.md）。它們引用一個還不存在的 `.claude/docs/project.md`。請：(1) 掃描本 repo，生成 project.md——必含：專案是什麼、架構與部署拓撲、檔案地圖、**驗證階梯**（按本專案實際工具鏈寫出可實跑的指令，每條先跑過再寫進去）、慣例；(2) 參考制度檔的寫法生成本專案的 CLAUDE.md（精簡路由 + 鐵律 + 空的踩坑記錄）；(3) 生成新的 letter.md（本專案的雷區與建議首批任務，交接區留空）；(4) 派 fresh-context verifier 驗收：文件中每個路徑與指令都真實可用。全部 commit + push。
+
+移植後第一次健檢（§6）提前做，確認通用層沒有殘留任何 CMS 專屬敘述。
+
+## 6. 每季（或使用者要求時）的健檢清單
 
 - [ ] project.md 抽查 3 個事實對照程式碼（依賴版本、檔案地圖、部署設定）。
 - [ ] CLAUDE.md 路由表每個路徑 Glob 一次確認存在。

@@ -28,7 +28,7 @@
 
 1. **儀式化**：照樣派 verifier、照樣列驗收條件，但驗收條件寫成不可能 FAIL 的空話（「程式碼已修改」），或 verifier 回 FAIL 後被無視。預防：驗收條件的自查標準是「這條有沒有可能 FAIL？」不可能 FAIL 的條件等於沒寫；verifier FAIL 而不處理 = 任務未完成（judgment.md §2）。
 2. **規則被逐次放寬**：「這次比較急，跳過驗證階梯」「這個小改不用 verifier」。一次例外就是先例。預防：放寬任何「必須」都要走 maintenance.md §2 問使用者；急件的正確做法是縮小改動範圍，不是跳過驗證。
-3. **事實漂移**：project.md 慢慢變成當年 README 的翻版——寫著舊事實誤導後人。預防：鐵律 5（同 commit 同步）+ maintenance.md §5 健檢；你現在就可以做一件事——**開工時抽查 project.md 的一個事實**，不對就當場修。
+3. **事實漂移**：project.md 慢慢變成當年 README 的翻版——寫著舊事實誤導後人。預防：鐵律 5（同 commit 同步）+ maintenance.md §6 健檢；你現在就可以做一件事——**開工時抽查 project.md 的一個事實**，不對就當場修。
 4. **制度檔案膨脹**：每個 session 都往裡加一點，兩個月後 CLAUDE.md 300 行、沒人讀完。預防：maintenance.md §4 的精簡觸發點是硬性數字，超過就處理。
 5. **context 撐爆時亂丟工作**：session 快斷時來不及交接。預防：本來就該隨做隨 commit（鐵律 4）；真的要中斷，把未完成事項用 maintenance.md §3 格式補進這封信的下方「交接區」。
 
